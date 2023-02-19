@@ -1,7 +1,7 @@
 import random 
 from itertools import combinations 
 import math 
-
+import matplotlib.pyplot as plt
 
 class Individuo():
     def __init__(self, X,Y,bino,dec):
@@ -136,14 +136,17 @@ class AlgoritmoGenetico():
            elemento.X = self.Xmin + (elemento.dec *self.intervalo)
            
     def fx(self):
-        for elemento in self.individuos:
-            x = elemento.X 
-            # print('x:',x)
+        dataAux =  []
+        for i in range(len(self.individuos)):
+            x = self.individuos[i].X
             op = float("{:.4f}".format(math.sin(math.radians(x))))
             op2 = float("{:.4f}".format(math.sqrt(2*(pow(x,2))-x-2)))
-            resultado = float("{:.4f}".format(op *op2))
-            elemento.Y = resultado
-        print(len(self.individuos))
+            if(op2 > 0): 
+                resultado = float("{:.4f}".format(op * op2))
+                self.individuos[i].Y = resultado
+                dataAux.append(self.individuos[i])    
+        self.individuos.clear()
+        self.individuos = dataAux
         
     def limpiar(self):
         auxIndividuos = []
@@ -198,6 +201,9 @@ if __name__ == "__main__":
 
     ag = AlgoritmoGenetico(xMinimo, xMaximo, intervalo, rango, puntos, poblacionMaxima, poblacionInicial, generaciones, noBits, Pmi,Pmg)
     ag.generarPoblacionInicial()
+    MejoresIndividuos = []
+    MediaIndividuos = []
+    PeoresIndividuos = []
     for i in range(0,generaciones):
         parejas = ag.posiblesParejas()
         hijos = ag.cruza(parejas)
@@ -216,6 +222,28 @@ if __name__ == "__main__":
         print("_______________________________ya2_________________")
         ag.limpiar()
         ag.poda()
-        print("INDIVIDUOS DESPUES DE LA PODA: ", ag.individuos)
-        print("LONGITUD",len(ag.individuos))
+        MejoresAptitudes = [individuo.Y for individuo in ag.individuos]
+        MejoresIndividuos.append(max(MejoresAptitudes))
+        aptitudes = [individuo.Y for individuo in ag.individuos]
+        promedio = sum(aptitudes)/len(aptitudes)
+        MediaIndividuos.append(promedio)
+        peoresAptitudes = [individuo.Y for individuo in ag.individuos]
+        PeoresIndividuos.append(min(peoresAptitudes))
+        print(i)
+        print("_____MEJORES_____\n" , MejoresIndividuos)
+        print("______PROMEDIO_____\n", MediaIndividuos)
+        print("_____PEOR_____\n", PeoresIndividuos)
         
+        try:
+            rmtree("assets")
+        except:
+            pass 
+        os.makedirs("assets\Video", exist_ok=True)
+
+        plt.plot(MejoresIndividuos, label="Mejor individuo", color="red", linestyle="-",)
+        plt.plot(MediaIndividuos, label="Promedio", color="blue", linestyle="-",)
+        plt.plot(PeoresIndividuos, label="Peor individuo", color="green", linestyle="-")
+        plt.legend()
+        os.makedirs("assets\Grafica", exist_ok=True)
+        plt.savefig("assets\Grafica\GraficaHistorial.png")
+        plt.close()
