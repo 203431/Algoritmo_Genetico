@@ -36,17 +36,15 @@ class AlgoritmoGenetico():
         individuos = []
         for i in range(0,self.poblacionInicial):
             binary = 0
-            x = self.Xmin + self.poblacionInicial
             decimal = random.uniform(0,self.rango)
             binary = bin(int(decimal))
             binary = binary.removeprefix("0b")
             if(len(binary) < self.noBits):
                 binary = binary.zfill(self.noBits)
-            self.individuos.append(Individuo(-1,-1,binary,decimal))
+            x = self.Xmin + (decimal * self.intervalo)
+            self.individuos.append(Individuo(x,-1,binary,decimal))
         individuos = self.individuos 
-        # print(individuos)
         return individuos
-
 
     def posiblesParejas(self):
         parejas = []
@@ -127,8 +125,9 @@ class AlgoritmoGenetico():
                 # Elevar 2 a la posición actual
                 multiplicador = 2**posicion
                 decimal += float(digito) * multiplicador
-                posicion += 1
-            self.individuos.append(Individuo(-1,-1,mutados[i],decimal))
+                posicion += 1            
+            x = self.Xmin + (decimal * self.intervalo)
+            self.individuos.append(Individuo(x,-1,mutados[i],decimal))
 
 
     
@@ -146,7 +145,19 @@ class AlgoritmoGenetico():
             elemento.Y = resultado
         print(len(self.individuos))
         
-    
+    def limpiar(self):
+        auxIndividuos = []
+        # i = 0
+        for i in range(len(self.individuos)):
+            if(self.individuos[i].X <= self.Xmax):
+                auxIndividuos.append(self.individuos[i])
+        self.individuos.clear()
+        self.individuos = auxIndividuos            
+        # for elemento in self.individuos:
+        #     if(elemento.X > self.Xmax):
+        #         self.individuos.pop(i)
+            # i += 1
+
     def poda(self):
         uniqueData = []
         self.individuos = sorted(self.individuos, key = lambda x: x.Y, reverse=True)
@@ -159,6 +170,7 @@ class AlgoritmoGenetico():
         self.individuos.clear()
         print(self.individuos)
         self.individuos = uniqueData
+
 
 
 if __name__ == "__main__":
@@ -202,6 +214,7 @@ if __name__ == "__main__":
         print("_______________________________ya_________________")
         print(ag.individuos)
         print("_______________________________ya2_________________")
+        ag.limpiar()
         ag.poda()
         print("INDIVIDUOS DESPUES DE LA PODA: ", ag.individuos)
         print("LONGITUD",len(ag.individuos))
